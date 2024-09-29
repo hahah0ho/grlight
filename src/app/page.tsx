@@ -12,6 +12,29 @@ export default function Home() {
     }
   };
 
+  const handleFileUpload = async () => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append("files", file);
+    });
+
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log("파일 업로드 성공");
+        window.location.href = "/result";
+      } else {
+        console.error("파일 업로드 실패");
+      }
+    } catch (error) {
+      console.error("파일 업로드 중 오류 발생:", error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       <div className="bg-white border border-gray-300 shadow-lg w-full max-w-md p-8 rounded-lg">
@@ -32,7 +55,7 @@ export default function Home() {
           )}
           <button
             className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
-            onClick={() => window.location.href = "/result"}
+            onClick={handleFileUpload}
           >
             대화 시작
           </button>
