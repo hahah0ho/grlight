@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+from openai import OpenAI 
+
+client = OpenAI()
 
 app = Flask(__name__)
 CORS(app)  # CORS 설정으로 Next.js와의 통신 허용
@@ -24,6 +27,20 @@ def upload_file():
     # 예시: process_file(file)
 
     return jsonify({'message': 'File uploaded successfully'}), 200
+
+def process_file(file):
+    
+
+    return
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
