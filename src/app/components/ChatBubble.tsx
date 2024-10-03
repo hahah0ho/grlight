@@ -2,6 +2,8 @@ import React from 'react';
 
 type ChatBubbleProps = {
   children: React.ReactNode;
+  mirrored?: boolean;
+  backgroundColor?: string;
 };
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ children }) => {
