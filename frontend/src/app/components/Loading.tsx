@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import Logo1 from '/../images/Logo1.png'
+import Logo1 from '../../images/Logo1.png'
 import Logo2 from "../../images/Logo2.png";
 import Title from "../../images/Title.png";
 

@@ -1,7 +1,7 @@
 'use client';
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import Image from 'next/image';
-import Navi from '../app/components/Navi';
+import Navi from './components/Navi';
 import ChatBubble from "./components/ChatBubble";
 import { useRouter } from 'next/navigation';
 import Logo1 from "../images/Logo1.png";
