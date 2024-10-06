@@ -10,20 +10,24 @@ client = OpenAI()
 app = Flask(__name__)
 CORS(app)  # CORS 설정으로 Next.js와의 통신 허용
 
-# 데이터베이스 파일 경로
-DB_FILE = 'db.json'
 
 def load_db():
+    # 데이터베이스 파일 경로
+    DB_FILE = '/backend/userdb.json'
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r') as file:
             data=json.load(file)
+            print(data)
             return data['users']
     else:
         return []
 
 def save_db(users):
+    # 기존 데이터를 불러와서 "users" 리스트만 업데이트
+    data = {"users": users}
+    DB_FILE = 'backend/userdb.json'
     with open(DB_FILE, 'w') as file:
-        json.dump({"users": users}, file, indent=4)  # 전체 구조를 파일에 저장
+        json.dump(data, file, indent=4)
 
 @app.route('/sign_up', methods=['POST'])
 def sign_up():
@@ -37,9 +41,13 @@ def sign_up():
     users.append({
         'username': data['username'],
         'email': data['email'],
-        'password': data['password']  # 주의: 실제 사용 시에는 비밀번호를 해시하여 저장해야 합니다.
+        'password': data['password'],  # 주의: 실제 사용 시에는 비밀번호를 해시하여 저장해야 합니다.
+        'chats': []
     })
+
+    # 변경된 사용자 리스트를 저장
     save_db(users)
+
     return jsonify({'success': True, 'message': '회원가입 성공!'})
 
 
