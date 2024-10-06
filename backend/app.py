@@ -4,6 +4,11 @@ import os
 from werkzeug.utils import secure_filename
 from openai import OpenAI 
 import json
+import csv
+import base64
+from pydantic import BaseModel
+from openai import OpenAI
+from chatbot import *
 
 client = OpenAI()
 
@@ -83,10 +88,39 @@ def upload_file():
         response_message += f", message: {message}"
     if file:
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        response_message += f", file: {filename}"
+        file_ext = filename.rsplit('.', 1)[1].lower()  # 파일 확장자 추출
+        # 확장자에 따라 파일 처리
+        if file_ext == 'csv':
+            # CSV 파일 처리 로직
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            response_message += f", CSV file: {filename} saved"
+            csv_data = read_csv_file(file_path)
+            input_data = csvtotext(csv_data)
+            relationship_result = relationship_agent(input_data, message)
+            message_result = message_agent(input_data, relationship_result, message)
+            datetime_result = datetime_agent(input_data, relationship_result, message)
+            total_result = total_agent(input_data, message_result, relationship_result, datetime_result, message)
+            recommend_result = recommend_agent(total_result, input_data, message)
 
-    return {'message': response_message}, 200
+            return {'totla_result': total_result, "recommend_result": recommend_result}, 200
+
+        
+        elif file_ext in {'png', 'jpg', 'jpeg', 'gif'}:
+            # 이미지 파일 처리 로직
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            response_message += f", Image file: {filename} saved"
+            encoded_image = encode_image(file_path)
+            input_data = check_image(encoded_image)
+            relationship_result = relationship_agent(input_data, message)
+            message_result = message_agent(input_data, relationship_result, message)
+            datetime_result = datetime_agent(input_data, relationship_result, message)
+            total_result = total_agent(input_data, message_result, relationship_result, datetime_result, message)
+            recommend_result = recommend_agent(total_result, input_data, message)
+
+            return {'totla_result': total_result, "recommend_result": recommend_result}, 200
+
 
 def process_file(file):
     

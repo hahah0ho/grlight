@@ -52,9 +52,9 @@ const MainPage: React.FC = () => {
   const handleSendMessage = async () => {
     setIsChatStarted(true); // 채팅이 시작됨을 표시
 
-    if (input.trim() === "") {
-      return; // 메시지가 없으면 아무 작업도 하지 않음
-    }
+    // if (input.trim() === "") {
+    //   return; // 메시지가 없으면 아무 작업도 하지 않음
+    // }
 
     // 사용자 메시지 추가
     setMessages((prev) => [
@@ -71,7 +71,7 @@ const MainPage: React.FC = () => {
 
     // 서버에 요청 보내기
     try {
-      const response = await fetch('http://localhost:5000/chat', { // 실제 서버 엔드포인트로 수정 필요
+      const response = await fetch('http://localhost:5000/upload', { // 실제 서버 엔드포인트로 수정 필요
         method: 'POST',
         body: formData
       });
