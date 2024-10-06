@@ -18,7 +18,6 @@ const MainPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null); // 파일 상태 추가
   const [messages, setMessages] = useState<Message[]>([]); // Message 타입의 배열로 상태 정의
   const [input, setInput] = useState<string>(""); // 사용자가 입력 중인 텍스트를 저장하기 위한 상태
-  const [fileSent, setFileSent] = useState(false); // 파일 전송 후 상태
   const chatEndRef = useRef<HTMLDivElement | null>(null); // 스크롤을 자동으로 최신 메시지로 이동시키기 위한 참조값
 
   // 파일 선택 핸들러
@@ -26,7 +25,7 @@ const MainPage: React.FC = () => {
     setFile(event.target.files ? event.target.files[0] : null);
   };
 
-  // 10. 메시지가 추가될 때마다 스크롤을 최신 메시지로 이동시키기 위한 효과
+  // 메시지가 추가될 때마다 스크롤을 최신 메시지로 이동시키기 위한 효과
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -42,6 +41,7 @@ const MainPage: React.FC = () => {
   const handleFileDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const files = event.dataTransfer.files;
+    setFile(files[0]);
     console.log(files);
   }, []);
 
@@ -51,45 +51,37 @@ const MainPage: React.FC = () => {
 
   // 메시지와 파일을 함께 전송하는 함수
   const handleSendMessage = async () => {
-    // FormData 객체 생성
     const formData = new FormData();
 
-    // 선택된 파일이 있다면 FormData에 추가
     if (file) {
       formData.append("file", file);
     }
 
-    // 메시지가 있다면 FormData에 추가
     if (input.trim()) {
       formData.append("message", input);
     }
 
-    // 메시지 배열 업데이트
     setMessages((prev) => [
       ...prev,
       { type: "user", text: input || "File sent without message." },
       { type: "bot", text: "Processing your request..." }
     ]);
 
-    // 서버로 FormData 전송
     try {
       const response = await fetch('http://localhost:5000/upload', {
         method: 'POST',
-        body: formData,  // Content-Type을 명시하지 않아도 됩니다. fetch가 자동으로 처리합니다.
+        body: formData,
       });
-      const data = await response.json();  // 서버 응답을 JSON으로 파싱
-      // 성공 응답 처리
+      const data = await response.json();
       setMessages(prev => [...prev, { type: "bot", text: "File and message sent successfully." }]);
       console.log('Server response:', data);
-      setFileSent(true);  // 파일이 전송된 후 상단으로 이동
     } catch (error) {
       setMessages(prev => [...prev, { type: "bot", text: "Failed to send message and file." }]);
       console.error('Error uploading:', error);
     }
 
-    // 상태 초기화
     setInput("");
-    setFile(null);
+    setFile(null); // 파일 첨부 후 초기화
   };
 
   return (
@@ -130,13 +122,15 @@ const MainPage: React.FC = () => {
           />
         </div>
 
-        {/* 파일 첨부 칸 */}
-        <div className={`flex flex-row w-[80%] max-w-[900px] gap-4 mt-12 h-[200px] ${fileSent ? 'fixed top-0 left-0 right-0 z-10' : ''}`}>
+        {/* 안내 배경 박스 - 파일 첨부 칸 */}
+        <div className={`flex flex-row w-[80%] max-w-[900px] gap-4 mt-12 h-[200px] ${file ? 'order-first' : ''}`}>
           <ChatBubble>
             <div className="flex flex-row gap-2 items-center mt-[-10px]">
               <div className="relative w-[75%] font-normal leading-loose text-base text-[#463B35]">
-                지금 연락하는 그 사람과의 사랑...<br />
-                그린라이트인지 궁금하다면 카카오톡 채팅 csv 파일이나 캡처 이미지를 첨부해줘.<br />
+                지금 연락하는 그 사람과의 사랑...
+                <br />
+                그린라이트인지 궁금하다면 카카오톡 채팅 csv 파일이나 캡처 이미지를 첨부해줘.
+                <br />
                 그리구 상대방과 상황에 대해 간단하게 설명해줘~!
               </div>
               <div
@@ -145,13 +139,9 @@ const MainPage: React.FC = () => {
                 onDragOver={(event) => event.preventDefault()}
                 onClick={handleFileClick}
               >
-                {fileSent && file ? (
-                  <p className="text-[#8f8a86] text-lg font-dongle">{file.name}</p>
-                ) : (
-                  <p className="text-[#8f8a86] text-lg font-dongle">
-                    Drag & Drop or <span className="text-[#6e6e6e] font-bold">+</span>
-                  </p>
-                )}
+                <p className="text-[#8f8a86] text-lg font-dongle">
+                  Drag & Drop or <span className="text-[#6e6e6e] font-bold">+</span>
+                </p>
                 <input
                   id="fileInput"
                   type="file"
@@ -163,14 +153,21 @@ const MainPage: React.FC = () => {
           </ChatBubble>
         </div>
 
-        {/* 입력 및 전송 버튼 */}
-        <div className="flex items-center justify-between w-[80%] max-w-[1000px] h-[64px] py-0 px-4 mt-24 box-border bg-[#ECEBD8] border-solid border-[3px] border-black rounded-[45px]">
+        {/* 파일 이름 표시 */}
+        {file && (
+          <div className="flex items-center justify-center mt-4">
+            <span className="ml-2 text-lg text-green-600">첨부된 파일: {file.name}</span>
+          </div>
+        )}
+
+        {/* 채팅 입력 칸 - 하단 배치 */}
+        <div className="flex items-center justify-between w-[80%] max-w-[1000px] h-[64px] py-0 px-4 mt-auto box-border bg-[#ECEBD8] border-solid border-[3px] border-black rounded-[45px]">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="flex-grow p-2 border border-[#ECEBD8] text-black bg-[#ECEBD8] outline-none"
-            placeholder="메시지를 입력하세요..." // 사용자가 메시지를 입력할 때 보이는 플레이스홀더
+            placeholder="메시지를 입력하세요..."
           />
           <button className="w-[69px] h-[50px] md:w-[69px] md:h-[40px] bg-[#9EE557] rounded-full flex justify-center items-center hover:bg-[#3D733F]"
             onClick={handleSendMessage}>
