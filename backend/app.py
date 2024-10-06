@@ -13,42 +13,62 @@ CORS(app)  # CORS 설정으로 Next.js와의 통신 허용
 
 def load_db():
     # 데이터베이스 파일 경로
-    DB_FILE = '/backend/userdb.json'
+    DB_FILE = './backend/userdb.json'
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r') as file:
             data=json.load(file)
-            print(data)
             return data['users']
     else:
         return []
 
-def save_db(users):
-    # 기존 데이터를 불러와서 "users" 리스트만 업데이트
-    data = {"users": users}
-    DB_FILE = 'backend/userdb.json'
-    with open(DB_FILE, 'w') as file:
-        json.dump(data, file, indent=4)
+def save_db(new_user):
+    DB_FILE = './backend/userdb.json'
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, 'r') as file:
+            data = json.load(file)
+
+        # 기존 사용자 목록에 새 사용자 추가
+        data['users'].append(new_user)
+
+        with open(DB_FILE, 'w') as file:
+            json.dump(data, file, indent=4)
 
 @app.route('/sign_up', methods=['POST'])
 def sign_up():
     data = request.json
+    print(data)
     users = load_db()
     for user in users:
         if user['email'] == data['email'] or user['username'] == data['username']:
             return jsonify({'success': False, 'message': '이미 사용중인 이메일 또는 아이디입니다.'}), 409
     
     # 새 사용자 데이터를 추가
-    users.append({
+    new_user = {
         'username': data['username'],
         'email': data['email'],
         'password': data['password'],  # 주의: 실제 사용 시에는 비밀번호를 해시하여 저장해야 합니다.
         'chats': []
-    })
+    }
 
     # 변경된 사용자 리스트를 저장
-    save_db(users)
+    save_db(new_user)
 
     return jsonify({'success': True, 'message': '회원가입 성공!'})
+
+@app.route('/sign_in', methods=['POST'])
+def sign_in():
+    data = request.json
+    print(data)
+    users = load_db()
+    print(users)
+    for user in users:
+        if user['username'] == data['username'] and user['password'] == data['password'] :
+            return jsonify({'success': True, 'message': '로그인 성공!'})
+    
+    else:
+        return jsonify({'success': False, 'message': '아이디 또는 비밀번호가 틀렸습니다.'})
+
+    
 
 
 

@@ -12,7 +12,7 @@ const GotomainPage: React.FC = () => {
 
   const handleMain = () => {
     // 로그인 로직 추가 (예: 유효성 검사, API 호출 등)
-    router.push('/');
+    router.push('/main');
   };
 
   return (

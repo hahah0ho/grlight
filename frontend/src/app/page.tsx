@@ -1,94 +1,133 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import React from 'react';
-import Image from 'next/image';
-import Title from '../images/Title.png';
+"use client";
 
-const LoginPage: React.FC = () => {
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Logo1 from '../images/Logo1.png'
+import Logo2 from "../images/Logo2.png";
+import Title from "../images/Title.png";
+
+const Loading: React.FC = () => {
   const router = useRouter();
 
-  const handleGotomain = () => {
-    // 로그인 로직 추가 (예: 유효성 검사, API 호출 등)
-    router.push('/gotomain');
-  };
+  // 2초 후에 /signin 페이지로 이동하는 useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push('/signin');  // 2초 후 /signin 페이지로 이동
+    }, 2000);
 
-  const handleSignup = () => {
-    router.push('/signup'); // 회원가입 페이지 경로로 이동
-  };
+    // 컴포넌트가 언마운트될 때 타이머를 클리어 (메모리 누수 방지)
+    return () => clearTimeout(timer);
+  }, [router]);
+
 
   return (
-    <div className="w-screen h-screen flex flex-col justify-center items-center bg-[#f5f4e6] px-4 overflow-hidden">
-      {/* 상단 제목 */}
-      <div className="w-[80%] max-w-[600px] mb-8">
+    <main className="relative w-full h-screen bg-[#F5F4E6] z-[9999]">
+      {/* 배경 사각형 */}
+      <div
+        className="absolute"
+        style={{
+          top: '81.2vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '29.79vw',
+          height: '2.78vh',
+          backgroundColor: '#9EE557',
+          borderRadius: '0.52vw'
+        }}
+      />
+
+      {/* 로고들 */}
+      <div
+        className="absolute"
+        style={{
+          top: '16.94vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '40.44vw',
+          height: '40vh',
+        }}
+      >
         <Image
-          src={Title}
-          alt="Title"
-          layout="responsive"
-          width={600}
-          height={100}
+          className="absolute"
+          src={Logo1}
+          alt="Logo 1"
+          style={{
+            top: '12.04vh',
+            width: '21.47vw',
+            height: '28.1vh'
+          }}
+        />
+        <Image
+          className="absolute"
+          src={Logo2}
+          alt="Logo 2"
+          style={{
+            left: '19.06vw',
+            width: '21.5vw',
+            height: '40.2vh',
+          }}
         />
       </div>
 
-      {/* 로그인 박스 */}
-      <div className="w-full max-w-[420px] px-12 py-10 bg-white rounded-[20px] shadow-lg border-[#463b35] flex flex-col">
-        {/* 타이틀 */}
-        <div className="mb-8 text-left">
-          <h2 className="text-[#453b35] text-2xl md:text-3xl leading-tight mb-4 font-sans">
-            로그인 하고 <br />
-            그린라이트 판별하기
-          </h2>
-        </div>
+      {/* 제목 */}
+      <Image
+        className="absolute"
+        src={Title}
+        alt="Title"
+        style={{
+          top: '53.98vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '50.26vw',
+          height: '8.06vh'
+        }}
+      />
 
-        {/* 로그인 입력 폼 */}
-        <form className="flex flex-col gap-4">
-          {/* 아이디 필드 */}
-          <div className="flex flex-col">
-            <label htmlFor="username" className="text-[#453b35] text-lg md:text-xl mb-2 font-dongle">
-              아이디
-            </label>
-            <input
-              id="username"
-              type="text"
-              placeholder="아이디를 입력하세요"
-              className="w-full p-3 rounded-[15px] bg-[#fbeee7] text-[#453b35] text-base md:text-lg font-dongle placeholder-[#d1b7a9] focus:outline-none border border-[#e2dcd5]"
-            />
-          </div>
-
-          {/* 비밀번호 필드 */}
-          <div className="flex flex-col">
-            <label htmlFor="password" className="text-[#453b35] text-lg md:text-xl mb-2 font-dongle">
-              비밀번호
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-              className="w-full p-3 rounded-[15px] bg-[#fbeee7] text-[#453b35] text-base md:text-lg font-dongle placeholder-[#d1b7a9] focus:outline-none border border-[#e2dcd5]"
-            />
-          </div>
-
-          {/* 로그인 버튼 */}
-          <button
-            type="button"
-            className="w-full py-3 mt-6 bg-[#463b35] text-white text-lg md:text-2xl font-dongle rounded-[15px] hover:bg-[#372d28] transition-colors duration-300"
-            onClick={handleGotomain}
-          >
-            로그인
-          </button>
-        </form>
-
-        {/* 회원가입 링크 */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleSignup}
-            className="text-[#453b35] text-lg md:text-xl hover:underline font-dongle"
-          >
-            회원가입
-          </button>
-        </div>
+      {/* 로딩 텍스트 */}
+      <div
+        className="absolute font-pixelrobo font-medium text-center cursor-pointer"
+        style={{
+          top: '75.37vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '3.24vh',
+        }}
+      >
+        <span className="text-[#FF7895]">L</span>
+        <span className="text-[#9EE557]">o</span>
+        <span className="text-[#DBA5B0]">a</span>
+        <span className="text-[#EB7D86]">d</span>
+        <span className="text-[#BBCB73]">i</span>
+        <span className="text-[#FF7895]">n</span>
+        <span className="text-[#DBA5B0]">g</span>
+        <span className="text-[#FF7895]"> </span>
+        <span className="text-[#9EE557]">.</span>
+        <span className="text-[#FF7895]"> . </span>
+        <span className="text-[#DBA5B0]">.</span>
       </div>
-    </div>
+
+      {/* 진행 바 */}
+      <div
+        className="absolute bg-[#E9EABC] border-4 border-[#717171] rounded-md"
+        style={{
+          top: '81.2vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '62.92vw',
+          height: '2.78vh',
+        }}
+      >
+        <div
+          className="bg-[#9EE557] rounded-md"
+          style={{
+            width: '1.4vw',
+            height: '100%',
+          }}
+        />
+      </div>
+    </main>
   );
 };
 
-export default LoginPage;
+export default Loading;

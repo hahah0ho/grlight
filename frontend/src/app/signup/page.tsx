@@ -36,7 +36,7 @@ const SignupPage: React.FC = () => {
     const data = await response.json();
 
     if (data.success) {
-      router.push('/'); // 성공적으로 회원가입이 되면 로그인 페이지로 이동
+      router.push('/signin'); // 성공적으로 회원가입이 되면 로그인 페이지로 이동
     } else {
       alert(data.message); // 실패시 서버로부터 받은 메시지를 알림
     }
@@ -44,7 +44,7 @@ const SignupPage: React.FC = () => {
 
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col items-center justify-center w-full h-screen bg-[#f5f4e6] p-4 overflow-hidden">
+    <form className="flex flex-col items-center justify-center w-full h-screen bg-[#f5f4e6] p-4 overflow-hidden">
       <div className="flex flex-col items-center justify-center w-full h-screen bg-[#f5f4e6] p-4 overflow-hidden">
         <div className="w-full max-w-[420px] px-12 py-10 bg-white rounded-[20px] shadow-lg border-[#463b35] flex flex-col items-center">
           <div className="w-full flex flex-col items-start gap-8">
@@ -65,6 +65,8 @@ const SignupPage: React.FC = () => {
                 <input
                   type="email"
                   placeholder="이메일을 입력하세요"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full h-10 md:h-12 pl-4 bg-[#fbeee7] rounded-[15px] text-[#453b35] text-base md:text-lg"
                 />
               </div>
@@ -75,6 +77,8 @@ const SignupPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="아이디를 입력하세요"
                   className="w-full h-10 md:h-12 pl-4 bg-[#fbeee7] rounded-[15px] text-[#453b35] text-base md:text-lg"
                 />
@@ -86,6 +90,8 @@ const SignupPage: React.FC = () => {
                 </label>
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   className="w-full h-10 md:h-12 pl-4 bg-[#fbeee7] rounded-[15px] text-[#453b35] text-base md:text-lg"
                 />
