@@ -69,9 +69,6 @@ def sign_in():
         return jsonify({'success': False, 'message': '아이디 또는 비밀번호가 틀렸습니다.'})
 
     
-
-
-
 UPLOAD_FOLDER = './uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Flask 앱 설정에 UPLOAD_FOLDER 추가
