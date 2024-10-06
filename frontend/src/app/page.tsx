@@ -7,32 +7,24 @@ import { useRouter } from 'next/navigation';
 import Logo1 from "../images/Logo1.png";
 import Logo2 from "../images/Logo2.png";
 import Title from "../images/Title.png";
+import axios from 'axios';
 
 interface Message {
   type: "user" | "bot";
   text: string;
 }
 
-
-
 const MainPage: React.FC = () => {
-
+  const [file, setFile] = useState<File | null>(null); // 파일 상태 추가
   const [messages, setMessages] = useState<Message[]>([]); // Message 타입의 배열로 상태 정의
   const [input, setInput] = useState<string>(""); // 3. 사용자가 입력 중인 텍스트를 저장하기 위한 상태
   const chatEndRef = useRef<HTMLDivElement | null>(null); // 4. 스크롤을 자동으로 최신 메시지로 이동시키기 위한 참조값
 
-  // 5. 사용자가 메시지를 전송하는 함수
-  const handleSendMessage = () => {
-    if (input.trim()) {
-      // 6. 입력된 메시지가 공백이 아닐 때만 처리
-      setMessages((prev) => [
-        ...prev,
-        { type: "user", text: input }, // 7. 사용자가 입력한 메시지 추가
-        { type: "bot", text: "AI 응답입니다. :) 이것은 하드코딩된 예시입니다." }, // 8. AI 응답 메시지 추가 (하드코딩된 예시)
-      ]);
-      setInput(""); // 9. 입력 필드를 비웁니다.
-    }
+  // 파일 선택 핸들러
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(event.target.files ? event.target.files[0] : null);
   };
+
 
   // 10. 메시지가 추가될 때마다 스크롤을 최신 메시지로 이동시키기 위한 효과
   useEffect(() => {
@@ -57,6 +49,49 @@ const MainPage: React.FC = () => {
   const handleFileClick = useCallback(() => {
     document.getElementById('fileInput')?.click();
   }, []);
+
+  // 메시지와 파일을 함께 전송하는 함수
+  const handleSendMessage = async () => {
+    // FormData 객체 생성
+    const formData = new FormData();
+
+    // 선택된 파일이 있다면 FormData에 추가
+    if (file) {
+      formData.append("file", file);
+    }
+
+    // 메시지가 있다면 FormData에 추가
+    if (input.trim()) {
+      formData.append("message", input);
+    }
+
+    // 메시지 배열 업데이트
+    setMessages((prev) => [
+      ...prev,
+      { type: "user", text: input || "File sent without message." },
+      { type: "bot", text: "Processing your request..." }
+    ]);
+
+    // 서버로 FormData 전송
+    try {
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,  // Content-Type을 명시하지 않아도 됩니다. fetch가 자동으로 처리합니다.
+      });
+      const data = await response.json();  // 서버 응답을 JSON으로 파싱
+      // 성공 응답 처리
+      setMessages(prev => [...prev, { type: "bot", text: "File and message sent successfully." }]);
+      console.log('Server response:', data);
+    } catch (error) {
+      setMessages(prev => [...prev, { type: "bot", text: "Failed to send message and file." }]);
+      console.error('Error uploading:', error);
+    }
+
+    // 상태 초기화
+    setInput("");
+    setFile(null);
+  };
+
 
   return (
     <main className="flex flex-col w-full h-screen max-h-screen">
@@ -117,7 +152,7 @@ const MainPage: React.FC = () => {
                   id="fileInput"
                   type="file"
                   style={{ display: 'none' }}
-                  onChange={(event) => console.log(event.target.files)}
+                  onChange={handleFileChange}
                 />
               </div>
             </div>
