@@ -80,46 +80,66 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Flask 앱 설정에 UPLOAD_FOLDER
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    file = request.files.get('file')
     message = request.form.get('message')
+    if request.files:
+        file = request.files.get('file')
+    
+        response_message = "Received"
+        if message:
+            response_message += f", message: {message}"
+        if file:
+            filename = secure_filename(file.filename)
+            file_ext = filename.rsplit('.', 1)[1].lower()  # 파일 확장자 추출
+            # 확장자에 따라 파일 처리
+            if file_ext == 'txt':
+                # TXT 파일 처리 로직
+                input_data = file.read().decode('utf-8')
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                response_message += f", TXT file: {filename} saved"
+                # csv_data = read_csv_file(file_path)
+                # input_data = csvtotext(csv_data)
+                relationship_result = relationship_agent(input_data, message)
+                message_result = message_agent(input_data, relationship_result, message)
+                datetime_result = datetime_agent(input_data, relationship_result, message)
+                total_result = total_agent(input_data, message_result, relationship_result, datetime_result)
+                recommend_result = recommend_agent(total_result, input_data, message)
 
-    response_message = "Received"
-    if message:
-        response_message += f", message: {message}"
-    if file:
-        filename = secure_filename(file.filename)
-        file_ext = filename.rsplit('.', 1)[1].lower()  # 파일 확장자 추출
-        # 확장자에 따라 파일 처리
-        if file_ext == 'csv':
-            # CSV 파일 처리 로직
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            response_message += f", CSV file: {filename} saved"
-            csv_data = read_csv_file(file_path)
-            input_data = csvtotext(csv_data)
-            relationship_result = relationship_agent(input_data, message)
-            message_result = message_agent(input_data, relationship_result, message)
-            datetime_result = datetime_agent(input_data, relationship_result, message)
-            total_result = total_agent(input_data, message_result, relationship_result, datetime_result, message)
-            recommend_result = recommend_agent(total_result, input_data, message)
+                print(total_result)
 
-            return {'totla_result': total_result, "recommend_result": recommend_result}, 200
+                return {'user_message': message, 'total_result': total_result, "recommend_result": recommend_result}, 200
 
+            
+            elif file_ext in {'png', 'jpg', 'jpeg', 'gif'}:
+                # 이미지 파일 처리 로직
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                response_message += f", Image file: {filename} saved"
+                encoded_image = encode_image(file_path)
+                input_data = check_image(encoded_image)
+                relationship_result = relationship_agent(input_data, message)
+                message_result = message_agent(input_data, relationship_result, message)
+                datetime_result = datetime_agent(input_data, relationship_result, message)
+                total_result = total_agent(input_data, message_result, relationship_result, datetime_result)
+                recommend_result = recommend_agent(total_result, input_data, message)
+
+                print(total_result)
+
+                return {'user_message': message, 'total_result': total_result, "recommend_result": recommend_result}, 200
         
-        elif file_ext in {'png', 'jpg', 'jpeg', 'gif'}:
-            # 이미지 파일 처리 로직
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            response_message += f", Image file: {filename} saved"
-            encoded_image = encode_image(file_path)
-            input_data = check_image(encoded_image)
-            relationship_result = relationship_agent(input_data, message)
-            message_result = message_agent(input_data, relationship_result, message)
-            datetime_result = datetime_agent(input_data, relationship_result, message)
-            total_result = total_agent(input_data, message_result, relationship_result, datetime_result, message)
-            recommend_result = recommend_agent(total_result, input_data, message)
+    else:
+        input_data=message
+        relationship_result = relationship_agent(input_data)
+        message_result = message_agent(input_data, relationship_result)
+        datetime_result = datetime_agent(input_data, relationship_result)
+        total_result = total_agent(input_data, message_result, relationship_result, datetime_result)
+        recommend_result = recommend_agent(total_result, input_data)
 
-            return {'totla_result': total_result, "recommend_result": recommend_result}, 200
+        print(total_result)
+
+        return {'user_message': message, 'total_result': total_result, "recommend_result": recommend_result}, 200
+
+
 
 
 def process_file(file):

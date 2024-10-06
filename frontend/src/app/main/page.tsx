@@ -77,11 +77,20 @@ const MainPage: React.FC = () => {
       });
       const data = await response.json();
 
-      // 서버에서 받은 봇의 응답을 메시지로 추가
-      setMessages(prev => [
+      // 서버에서 받은 total_result와 recommend_result를 차례로 추가
+      setMessages((prev) => [
         ...prev,
-        { type: "bot", text: data.message || "봇의 응답이 없습니다." } // 봇 응답
+        { type: "bot", text: data.total_result || "총 결과가 없습니다." }, // total_result 추가
       ]);
+
+      // 1초 지연 후 recommend_result 추가
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          { type: "bot", text: data.recommend_result || "추천 결과가 없습니다." } // recommend_result 추가
+        ]);
+      }, 1000); // 1초 후 recommend_result 출력
+
     } catch (error) {
       // 에러 발생 시 봇의 에러 메시지 추가
       setMessages(prev => [
