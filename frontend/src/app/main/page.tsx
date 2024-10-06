@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import Logo1 from "../../images/Logo1.png";
 import Logo2 from "../../images/Logo2.png";
 import Title from "../../images/Title.png";
-import axios from 'axios';
 
 interface Message {
   type: "user" | "bot";
@@ -53,38 +52,43 @@ const MainPage: React.FC = () => {
   const handleSendMessage = async () => {
     setIsChatStarted(true); // 채팅이 시작됨을 표시
 
-    const formData = new FormData();
-
-    // 선택된 파일이 있다면 FormData에 추가
-    if (file) {
-      formData.append("file", file);
+    if (input.trim() === "") {
+      return; // 메시지가 없으면 아무 작업도 하지 않음
     }
 
-    // 메시지가 있다면 FormData에 추가
-    if (input.trim()) {
-      formData.append("message", input);
-    }
-
-    // 메시지 배열 업데이트
+    // 사용자 메시지 추가
     setMessages((prev) => [
       ...prev,
-      { type: "user", text: input || "File sent without message." },
-      { type: "bot", text: "Processing your request..." }
+      { type: "user", text: input }  // 입력된 메시지를 user로 추가
     ]);
 
-    // 서버로 FormData 전송
+    // 서버로 메시지 전송
+    const formData = new FormData();
+    formData.append("message", input); // 메시지 추가
+    if (file) {
+      formData.append("file", file); // 파일이 있을 경우 파일 추가
+    }
+
+    // 서버에 요청 보내기
     try {
-      const response = await fetch('http://localhost:5000/upload', {
+      const response = await fetch('http://localhost:5000/chat', { // 실제 서버 엔드포인트로 수정 필요
         method: 'POST',
-        body: formData,  // Content-Type을 명시하지 않아도 됩니다. fetch가 자동으로 처리합니다.
+        body: formData
       });
-      const data = await response.json();  // 서버 응답을 JSON으로 파싱
-      // 성공 응답 처리
-      setMessages(prev => [...prev, { type: "bot", text: "File and message sent successfully." }]);
-      console.log('Server response:', data);
+      const data = await response.json();
+
+      // 서버에서 받은 봇의 응답을 메시지로 추가
+      setMessages(prev => [
+        ...prev,
+        { type: "bot", text: data.message || "봇의 응답이 없습니다." } // 봇 응답
+      ]);
     } catch (error) {
-      setMessages(prev => [...prev, { type: "bot", text: "Failed to send message and file." }]);
-      console.error('Error uploading:', error);
+      // 에러 발생 시 봇의 에러 메시지 추가
+      setMessages(prev => [
+        ...prev,
+        { type: "bot", text: "Error occurred while sending message." }
+      ]);
+      console.error("Error:", error);
     }
 
     // 상태 초기화
@@ -162,6 +166,22 @@ const MainPage: React.FC = () => {
           </ChatBubble>
         </div>
 
+        {/* 채팅 내역 */}
+        <div className="flex flex-col w-full max-w-[900px] mt-4 space-y-4 overflow-y-auto">
+          {messages.map((message, index) => (
+            <ChatBubble
+              key={index}
+              mirrored={message.type === "user"} // 유저 메시지일 때 오른쪽 배치
+              backgroundColor={message.type === "user" ? "#9EE557" : "#ECEBD8"} // 유저는 초록색, 봇은 기본 배경색
+            >
+              <span>{message.text}</span>
+            </ChatBubble>
+          ))}
+          {/* 채팅 영역 끝 스크롤 참조 */}
+          <div ref={chatEndRef}></div>
+        </div>
+
+
         {/* 채팅 입력 박스 - 채팅 시작 후 하단에 고정 */}
         <div className={`flex items-center justify-between w-[80%] max-w-[1000px] h-[64px] py-0 px-4 ${isChatStarted ? 'mt-auto' : 'mt-24'} box-border bg-[#ECEBD8] border-solid border-[3px] border-black rounded-[45px]`}>
           <input
@@ -178,14 +198,9 @@ const MainPage: React.FC = () => {
             </svg>
           </button>
         </div>
-
-        {/* 채팅 영역 끝 스크롤 참조 */}
-        <div ref={chatEndRef}></div>
-
       </div>
     </main>
   );
 };
 
 export default MainPage;
-
