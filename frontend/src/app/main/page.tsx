@@ -18,6 +18,7 @@ const MainPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]); // Message 타입의 배열로 상태 정의
   const [input, setInput] = useState<string>(""); // 사용자가 입력 중인 텍스트를 저장하기 위한 상태
   const [isChatStarted, setIsChatStarted] = useState<boolean>(false); // 채팅이 시작되었는지 여부 확인
+  const [isLoading, setIsLoading] = useState<boolean>(false); // 로딩 상태 추가
   const chatEndRef = useRef<HTMLDivElement | null>(null); // 스크롤을 자동으로 최신 메시지로 이동시키기 위한 참조값
 
   // 파일 선택 핸들러
@@ -51,6 +52,7 @@ const MainPage: React.FC = () => {
   // 메시지와 파일을 함께 전송하는 함수
   const handleSendMessage = async () => {
     setIsChatStarted(true); // 채팅이 시작됨을 표시
+    setIsLoading(true); // 메시지 전송 시작 시 로딩 시작
 
     // if (input.trim() === "") {
     //   return; // 메시지가 없으면 아무 작업도 하지 않음
@@ -89,6 +91,7 @@ const MainPage: React.FC = () => {
           ...prev,
           { type: "bot", text: data.recommend_result || "추천 결과가 없습니다." } // recommend_result 추가
         ]);
+        setIsLoading(false); // 로딩 완료
       }, 1000); // 1초 후 recommend_result 출력
 
     } catch (error) {
@@ -208,6 +211,13 @@ const MainPage: React.FC = () => {
           </button>
         </div>
       </div>
+      {/* 로딩 인디케이터 */}
+      {isLoading && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="text-white text-3xl">Loading...</div>
+        </div>
+      )}
+
     </main>
   );
 };

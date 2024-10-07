@@ -17,6 +17,12 @@
             "email": "1111",
             "password": "1111",
             "chats": []
+        },
+        {
+            "username": "1234",
+            "email": "1234",
+            "password": "1234",
+            "chats": []
         }
     ]
 }
